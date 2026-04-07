@@ -112,14 +112,14 @@ class StripePaymentProvider(IPaymentProvider[StripeConfig]):
             raise PaymentProviderError from e
 
 
-PAYMENTS_PROVIDER_FACTORY: dict[str, IPaymentProvider] = {
+PAYMENTS_PROVIDER_REGISTRY: dict[str, IPaymentProvider] = {
     "stripe": StripePaymentProvider
 }
 
 
 def register_provider(name: str, IPaymentProvider) -> None:
-    global PAYMENTS_PROVIDER_FACTORY
-    PAYMENTS_PROVIDER_FACTORY[name] = IPaymentProvider
+    global PAYMENTS_PROVIDER_REGISTRY
+    PAYMENTS_PROVIDER_REGISTRY[name] = IPaymentProvider
 
 
 ModelT = TypeVar("ModelT")
@@ -168,7 +168,7 @@ def create_payment_link(
 
 
 def checkout_links_api(checkout: Checkout):
-    provider = PAYMENTS_PROVIDER_FACTORY.get(checkout.provider)
+    provider = PAYMENTS_PROVIDER_REGISTRY.get(checkout.provider)
     if not provider:
         raise ValidationError(f"provider not supported: {provider}")
     link = create_payment_link(
